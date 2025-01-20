@@ -1,5 +1,6 @@
 ---
 ### global
+acme_domain: {}
 acme_conf_dir: "{{ lookup('env', 'HOME') }}/letsencrypt"
 acme_cert_dir: "{{ acme_conf_dir }}/certs"
 acme_prerequisites_packagemanager: yum

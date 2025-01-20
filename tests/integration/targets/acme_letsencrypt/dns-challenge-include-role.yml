@@ -1,0 +1,38 @@
+---
+- name: Test if include_role is working
+  hosts: localhost
+  tasks:
+    - name: Create and upload Lets Encrypt certificates
+      ansible.builtin.include_role:
+        name: telekom_mms.acme.acme
+        public: true
+      vars:
+        acme_domain:
+          certificate_name: dns-pebble.example.com
+          zone: example.com
+          email_address: ssl-admin@example.com
+          subject_alt_name:
+            - example.com
+        acme_challenge_provider: pebble
+        acme_use_live_directory: false
+        acme_account_email: ssl-admin@example.com
+        acme_staging_directory: https://localhost:14000/dir
+        acme_validate_certs: false
+  post_tasks:
+    - name: Validate certs
+      vars:
+        acme_domain:
+          certificate_name: dns-pebble.example.com
+      community.crypto.x509_certificate_info:
+        path: "{{ acme_cert_path }}"
+      register: result
+
+    - name: Print the certificate
+      ansible.builtin.debug:
+        msg: "{{ result }}"
+
+    - name: Check if the certificate is correct
+      ansible.builtin.assert:
+        that:
+          - "'DNS:example.com' in result.subject_alt_name"
+          - "'Pebble Intermediate CA' in result.issuer.commonName"

@@ -1,0 +1,12 @@
+---
+- name: Test role if acme_domain is not set
+  hosts: localhost
+  roles:
+    - telekom_mms.acme.acme
+  vars:
+    acme_challenge_provider: pebble
+    acme_use_live_directory: false
+    acme_account_email: ssl-admin@example.com
+    acme_staging_directory: https://localhost:14000/dir
+    acme_validate_certs: false
+  ignore_errors: true

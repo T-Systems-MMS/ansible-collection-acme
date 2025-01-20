@@ -74,3 +74,43 @@ rewrite \.well-known/acme-challenge/(.*) https://your-storage-account-name.blob.
               ...
     acme_azbs_tenant_id: "2132184-3534543-54354-3543"
 ```
+
+```yaml
+---
+- name: Lets Encrypt certificates
+  hosts: localhost
+  vars:
+    acme_account_email: "ssl-admin@example.com"
+    acme_challenge_provider: "azbs"
+    acme_use_live_directory: true
+    acme_convert_cert_to: pfx
+    acme_azbs_resource_group: "my-resource-group"
+    acme_azbs_storage_account_name: "my-storage-account-name"
+    acme_azbs_container_name: "my-container"
+    acme_azbs_subscription_id: "0000-11111-2222-3333-444444"
+    acme_azbs_tenant_id: "2132184-3534543-54354-3543"
+    acme_azbs_client_id: "1234-21231-14152-1231"
+    acme_azbs_secret: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              ...
+    az_acme_certificates:
+      example-com:
+        zone: example.com
+        subject_alt_name: [ example.com, domain1.example.com, domain2.example.com ]
+      example2-com:
+        zone: example2.com
+        subject_alt_name: [ example2.com, domain1.example2.com, domain2.example2.com ]
+  tasks:
+    - name: Create and upload Lets Encrypt certificates
+      ansible.builtin.include_role:
+        name: telekom_mms.acme.acme
+      vars:
+        acme_domain:
+          email_address: "ssl-admin@example.com"
+          certificate_name: "{{ certificate.key }}"
+          zone: "{{ certificate.value.zone }}"
+          subject_alt_name: "{{ certificate.value.subject_alt_name }}"
+      loop: "{{ az_acme_certificates | dict2items }}"
+      loop_control:
+        loop_var: certificate
+```
