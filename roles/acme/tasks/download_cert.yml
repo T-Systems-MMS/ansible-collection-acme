@@ -4,6 +4,7 @@
     host: "{{ acme_cert_download_host | default(acme_domain.subject_alt_name[0]) }}"
     port: "{{ acme_cert_download_port | default('443') }}"
     server_name: "{{ acme_cert_san_name | default(acme_domain.subject_alt_name[0]) }}"
+    get_certificate_chain: true
   register: certificate
   retries: 10
   delay: 30
@@ -13,4 +14,10 @@
   ansible.builtin.copy:
     content: "{{ certificate.cert }}"
     dest: "{{ acme_cert_path }}"
+    mode: "0644"
+
+- name: Write fetched certificate chain to file
+  ansible.builtin.copy:
+    content: "{{ certificate.verified_chain[:-1] | join('\n') }}"
+    dest: "{{ acme_fullchain_path }}"
     mode: "0644"
